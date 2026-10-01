@@ -1,89 +1,103 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from io import BytesIO
 
-# =====================================================
-# CẤU HÌNH
-# =====================================================
+# =========================================================
+# CẤU HÌNH TRANG
+# =========================================================
 
 st.set_page_config(
-    page_title="LYLY - Tính Bill",
+    page_title="LYLY Milk Tea",
     page_icon="🧋",
     layout="wide"
 )
 
-# =====================================================
+# =========================================================
 # GIAO DIỆN
-# =====================================================
+# =========================================================
 
 st.markdown("""
 <style>
-    .title {
-        text-align: center;
-        font-size: 45px;
-        font-weight: bold;
-        color: #d85c8a;
-    }
 
-    .subtitle {
-        text-align: center;
-        font-size: 18px;
-        color: #777;
-        margin-bottom: 25px;
-    }
+.main-title {
+    text-align: center;
+    font-size: 48px;
+    font-weight: bold;
+    color: #d85c8a;
+    margin-bottom: 0px;
+}
 
-    .total-box {
-        background-color: #fff0f5;
-        border: 2px solid #f5a9c4;
-        border-radius: 15px;
-        padding: 20px;
-        text-align: center;
-        margin-top: 20px;
-    }
+.sub-title {
+    text-align: center;
+    font-size: 18px;
+    color: #777;
+    margin-bottom: 25px;
+}
 
-    .total-text {
-        font-size: 20px;
-        font-weight: bold;
-    }
+.total-box {
+    background-color: #fff0f5;
+    border: 2px solid #f3a8c0;
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
 
-    .total-money {
-        font-size: 35px;
-        font-weight: bold;
-        color: #d85c8a;
-    }
+.total-title {
+    font-size: 20px;
+    font-weight: bold;
+}
 
-    .bill {
-        background-color: #fffafa;
-        border: 1px solid #ddd;
-        border-radius: 15px;
-        padding: 25px;
-    }
+.total-money {
+    font-size: 36px;
+    font-weight: bold;
+    color: #d85c8a;
+}
+
+.bill-box {
+    background-color: #fffafc;
+    border: 2px solid #f0b6c8;
+    border-radius: 15px;
+    padding: 25px;
+}
+
+.bill-header {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: #d85c8a;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 
-# =====================================================
+# =========================================================
 # TIÊU ĐỀ
-# =====================================================
+# =========================================================
 
 st.markdown(
-    '<div class="title">🧋 LYLY</div>',
+    '<div class="main-title">🧋 LYLY</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
-    '<div class="subtitle">Trà sữa ngon - Vị ngọt yêu thương ❤️</div>',
+    '<div class="sub-title">Trà sữa ngon - Vị ngọt yêu thương ❤️</div>',
     unsafe_allow_html=True
 )
 
 st.divider()
 
 
-# =====================================================
+# =========================================================
 # MENU
-# =====================================================
+# =========================================================
 
 MENU = {
+
+    # -------- TRÀ SỮA --------
     "Trà sữa truyền thống": 30000,
     "Trà sữa matcha": 35000,
     "Trà sữa socola": 35000,
@@ -94,15 +108,16 @@ MENU = {
     "Trà sữa bạc hà": 35000,
     "Trà sữa caramel": 40000,
 
+    # -------- TRÀ --------
     "Trà đào": 30000,
     "Trà vải": 30000,
     "Trà mãng cầu": 35000
 }
 
 
-# =====================================================
+# =========================================================
 # TOPPING
-# =====================================================
+# =========================================================
 
 TOPPING = {
     "Không topping": 0,
@@ -115,19 +130,29 @@ TOPPING = {
 }
 
 
-# =====================================================
+# =========================================================
+# SIZE
+# =========================================================
+
+SIZE = {
+    "M": 0,
+    "L": 5000
+}
+
+
+# =========================================================
 # SESSION STATE
-# =====================================================
+# =========================================================
 
 if "so_mon" not in st.session_state:
     st.session_state.so_mon = 1
 
 
-# =====================================================
+# =========================================================
 # THÔNG TIN KHÁCH HÀNG
-# =====================================================
+# =========================================================
 
-st.subheader("👤 Thông tin khách hàng")
+st.subheader("👤 THÔNG TIN KHÁCH HÀNG")
 
 ten_khach = st.text_input(
     "Tên khách hàng",
@@ -135,26 +160,33 @@ ten_khach = st.text_input(
 )
 
 
-# =====================================================
+# =========================================================
 # THÊM / XÓA MÓN
-# =====================================================
+# =========================================================
+
+st.subheader("🛒 THÊM MÓN")
 
 col1, col2 = st.columns(2)
 
 with col1:
+
     if st.button(
         "➕ THÊM MÓN",
         use_container_width=True
     ):
+
         st.session_state.so_mon += 1
         st.rerun()
 
+
 with col2:
+
     if st.button(
         "➖ XÓA MÓN CUỐI",
         disabled=st.session_state.so_mon <= 1,
         use_container_width=True
     ):
+
         st.session_state.so_mon -= 1
         st.rerun()
 
@@ -162,32 +194,38 @@ with col2:
 st.divider()
 
 
-# =====================================================
-# CHỌN MÓN
-# =====================================================
-
-st.subheader("🛒 Chọn món")
+# =========================================================
+# DANH SÁCH ĐƠN HÀNG
+# =========================================================
 
 don_hang = []
 
+
+# =========================================================
+# NHẬP TỪNG MÓN
+# =========================================================
+
 for i in range(st.session_state.so_mon):
 
-    st.markdown(f"### 🧋 Món {i + 1}")
+    st.markdown(f"## 🧋 MÓN {i + 1}")
 
-    # ---------------------------------------------
-    # LOẠI TRÀ + SỐ LƯỢNG
-    # ---------------------------------------------
+    # -----------------------------------------------------
+    # TÊN MÓN + SỐ LƯỢNG + SIZE
+    # -----------------------------------------------------
 
     col1, col2, col3 = st.columns([4, 1, 2])
 
     with col1:
-        loai_tra = st.selectbox(
+
+        loai_nuoc = st.selectbox(
             "Loại trà / trà sữa",
             list(MENU.keys()),
-            key=f"loai_tra_{i}"
+            key=f"loai_nuoc_{i}"
         )
 
+
     with col2:
+
         so_luong = st.number_input(
             "Số lượng",
             min_value=1,
@@ -197,17 +235,23 @@ for i in range(st.session_state.so_mon):
             key=f"so_luong_{i}"
         )
 
+
     with col3:
-        gia = MENU[loai_tra]
 
-        st.write("**Giá / ly**")
-        st.write(f"### {gia:,} đ")
+        size = st.radio(
+            "Size",
+            ["M", "L"],
+            horizontal=True,
+            key=f"size_{i}"
+        )
 
-    # ---------------------------------------------
+
+    # -----------------------------------------------------
     # TOPPING - ĐƯỜNG - ĐÁ
-    # ---------------------------------------------
+    # -----------------------------------------------------
 
     col4, col5, col6 = st.columns(3)
+
 
     with col4:
 
@@ -216,6 +260,7 @@ for i in range(st.session_state.so_mon):
             list(TOPPING.keys()),
             key=f"topping_{i}"
         )
+
 
     with col5:
 
@@ -230,6 +275,7 @@ for i in range(st.session_state.so_mon):
             key=f"duong_{i}"
         )
 
+
     with col6:
 
         muc_da = st.selectbox(
@@ -242,44 +288,74 @@ for i in range(st.session_state.so_mon):
             key=f"da_{i}"
         )
 
-    # ---------------------------------------------
-    # TÍNH TIỀN
-    # ---------------------------------------------
+
+    # =====================================================
+    # TÍNH GIÁ
+    # =====================================================
+
+    gia_co_ban = MENU[loai_nuoc]
+
+    gia_size = SIZE[size]
 
     tien_topping = sum(
         TOPPING[x]
         for x in topping
     )
 
-    don_gia = gia + tien_topping
+    don_gia = (
+        gia_co_ban
+        + gia_size
+        + tien_topping
+    )
 
     thanh_tien = don_gia * so_luong
 
-    # ---------------------------------------------
-    # LƯU ĐƠN HÀNG
-    # ---------------------------------------------
+
+    # =====================================================
+    # HIỂN THỊ GIÁ MÓN
+    # =====================================================
+
+    st.info(
+        f"💰 Đơn giá: **{don_gia:,} VNĐ/ly**  |  "
+        f"Thành tiền: **{thanh_tien:,} VNĐ**"
+    )
+
+
+    # =====================================================
+    # LƯU ĐƠN
+    # =====================================================
 
     don_hang.append({
+
         "STT": i + 1,
-        "Loại trà / trà sữa": loai_tra,
+
+        "Loại trà / trà sữa": loai_nuoc,
+
+        "Size": size,
+
         "Số lượng": so_luong,
-        "Topping": (
+
+        "Topping":
             ", ".join(topping)
             if topping
-            else "Không topping"
-        ),
+            else "Không topping",
+
         "Mức đường": muc_duong,
+
         "Mức đá": muc_da,
+
         "Đơn giá": don_gia,
+
         "Thành tiền": thanh_tien
     })
+
 
     st.divider()
 
 
-# =====================================================
-# TÍNH TỔNG
-# =====================================================
+# =========================================================
+# TÍNH TỔNG TIỀN
+# =========================================================
 
 tong_tien = sum(
     item["Thành tiền"]
@@ -287,27 +363,28 @@ tong_tien = sum(
 )
 
 
-# =====================================================
+# =========================================================
 # HIỂN THỊ KẾT QUẢ ĐÃ NHẬP
-# =====================================================
+# =========================================================
 
-st.subheader("📋 ĐƠN HÀNG CỦA BẠN")
+st.subheader("📋 CHI TIẾT ĐƠN HÀNG")
 
 df = pd.DataFrame(don_hang)
 
+
+# Tạo bảng hiển thị đẹp hơn
 df_hien_thi = df.copy()
 
-df_hien_thi["Đơn giá"] = df_hien_thi[
-    "Đơn giá"
-].apply(
-    lambda x: f"{x:,} VNĐ"
+df_hien_thi["Đơn giá"] = (
+    df_hien_thi["Đơn giá"]
+    .apply(lambda x: f"{x:,} VNĐ")
 )
 
-df_hien_thi["Thành tiền"] = df_hien_thi[
-    "Thành tiền"
-].apply(
-    lambda x: f"{x:,} VNĐ"
+df_hien_thi["Thành tiền"] = (
+    df_hien_thi["Thành tiền"]
+    .apply(lambda x: f"{x:,} VNĐ")
 )
+
 
 st.dataframe(
     df_hien_thi,
@@ -316,15 +393,15 @@ st.dataframe(
 )
 
 
-# =====================================================
+# =========================================================
 # TỔNG TIỀN
-# =====================================================
+# =========================================================
 
 st.markdown(
     f"""
     <div class="total-box">
 
-        <div class="total-text">
+        <div class="total-title">
             💰 TỔNG SỐ TIỀN CẦN THANH TOÁN
         </div>
 
@@ -337,12 +414,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.write("")
 
-
-# =====================================================
-# THANH TOÁN
-# =====================================================
+# =========================================================
+# NÚT THANH TOÁN
+# =========================================================
 
 if st.button(
     "💳 THANH TOÁN",
@@ -350,150 +425,255 @@ if st.button(
     use_container_width=True
 ):
 
-    # Kiểm tra tên khách hàng
+    # -----------------------------------------------------
+    # KIỂM TRA TÊN KHÁCH
+    # -----------------------------------------------------
 
     if ten_khach.strip() == "":
+
         st.error(
             "⚠️ Vui lòng nhập tên khách hàng!"
         )
 
-    else:
-
-        # =============================================
-        # TẠO MÃ HÓA ĐƠN
-        # =============================================
-
-        ma_bill = datetime.now().strftime(
-            "%Y%m%d%H%M%S"
-        )
-
-        thoi_gian = datetime.now().strftime(
-            "%d/%m/%Y %H:%M:%S"
-        )
-
-        st.success(
-            "✅ Thanh toán thành công!"
-        )
-
-        st.divider()
+        st.stop()
 
 
-        # =============================================
-        # BILL
-        # =============================================
+    # -----------------------------------------------------
+    # TẠO BILL
+    # -----------------------------------------------------
 
-        st.markdown(
-            '<div class="bill">',
-            unsafe_allow_html=True
-        )
+    ma_bill = datetime.now().strftime(
+        "%Y%m%d%H%M%S"
+    )
 
-        st.markdown(
-            "## 🧾 LYLY MILK TEA"
-        )
+    thoi_gian = datetime.now().strftime(
+        "%d/%m/%Y %H:%M:%S"
+    )
+
+
+    st.success(
+        "✅ Thanh toán thành công!"
+    )
+
+
+    st.divider()
+
+
+    # =====================================================
+    # BILL
+    # =====================================================
+
+    st.markdown(
+        '<div class="bill-box">',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="bill-header">🧾 LYLY MILK TEA</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        "<p style='text-align:center;'>"
+        "Trà sữa ngon - Vị ngọt yêu thương ❤️"
+        "</p>",
+        unsafe_allow_html=True
+    )
+
+
+    st.divider()
+
+
+    # -----------------------------------------------------
+    # THÔNG TIN BILL
+    # -----------------------------------------------------
+
+    col1, col2 = st.columns(2)
+
+    with col1:
 
         st.write(
             f"**Mã hóa đơn:** {ma_bill}"
         )
 
         st.write(
+            f"**Khách hàng:** {ten_khach}"
+        )
+
+
+    with col2:
+
+        st.write(
             f"**Thời gian:** {thoi_gian}"
         )
 
         st.write(
-            f"**Khách hàng:** {ten_khach}"
+            f"**Số món:** {len(don_hang)}"
+        )
+
+
+    st.divider()
+
+
+    # =====================================================
+    # CHI TIẾT TỪNG MÓN TRÊN BILL
+    # =====================================================
+
+    for item in don_hang:
+
+        st.markdown(
+            f"""
+### 🧋 {item["STT"]}. {item["Loại trà / trà sữa"]}
+
+| Thông tin | Chi tiết |
+|---|---|
+| Size | **{item["Size"]}** |
+| Số lượng | **{item["Số lượng"]} ly** |
+| Topping | **{item["Topping"]}** |
+| Mức đường | **{item["Mức đường"]}** |
+| Mức đá | **{item["Mức đá"]}** |
+| Đơn giá | **{item["Đơn giá"]:,} VNĐ** |
+| Thành tiền | **{item["Thành tiền"]:,} VNĐ** |
+"""
         )
 
         st.divider()
 
 
-        # =============================================
-        # CHI TIẾT BILL
-        # =============================================
+    # =====================================================
+    # TỔNG THANH TOÁN
+    # =====================================================
 
-        for item in don_hang:
+    st.markdown(
+        f"""
+## 💰 TỔNG THANH TOÁN
 
-            st.markdown(
-                f"""
-                ### 🧋 {item["STT"]}. {item["Loại trà / trà sữa"]}
+# {tong_tien:,} VNĐ
+"""
+    )
 
-                **Số lượng:** {item["Số lượng"]}
 
-                **Topping:** {item["Topping"]}
+    st.markdown(
+        """
+        <p style="text-align:center;
+                  font-size:18px;
+                  color:#d85c8a;">
+            💗 Cảm ơn quý khách đã ủng hộ LYLY! 💗
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
-                **Mức đường:** {item["Mức đường"]}
 
-                **Mức đá:** {item["Mức đá"]}
+    st.markdown(
+        "</div>",
+        unsafe_allow_html=True
+    )
 
-                **Đơn giá:** {item["Đơn giá"]:,} VNĐ
 
-                **Thành tiền:** {item["Thành tiền"]:,} VNĐ
-                """
+    # =====================================================
+    # XUẤT EXCEL
+    # =====================================================
+
+    st.divider()
+
+    st.subheader("📥 XUẤT BILL")
+
+
+    df_excel = pd.DataFrame(don_hang)
+
+
+    # Thêm thông tin hóa đơn
+
+    df_excel.insert(
+        0,
+        "Mã hóa đơn",
+        ma_bill
+    )
+
+    df_excel.insert(
+        1,
+        "Thời gian",
+        thoi_gian
+    )
+
+    df_excel.insert(
+        2,
+        "Khách hàng",
+        ten_khach
+    )
+
+
+    # =====================================================
+    # TẠO FILE EXCEL
+    # =====================================================
+
+    output = BytesIO()
+
+
+    with pd.ExcelWriter(
+        output,
+        engine="openpyxl"
+    ) as writer:
+
+        df_excel.to_excel(
+            writer,
+            index=False,
+            sheet_name="Hóa đơn"
+        )
+
+
+        worksheet = writer.sheets["Hóa đơn"]
+
+
+        # Điều chỉnh độ rộng cột
+
+        for column in worksheet.columns:
+
+            max_length = 0
+
+            column_letter = (
+                column[0].column_letter
             )
 
-            st.divider()
+            for cell in column:
+
+                try:
+
+                    if len(str(cell.value)) > max_length:
+
+                        max_length = len(
+                            str(cell.value)
+                        )
+
+                except:
+                    pass
 
 
-        # =============================================
-        # TỔNG THANH TOÁN
-        # =============================================
-
-        st.markdown(
-            f"""
-            ## 💰 TỔNG THANH TOÁN
-
-            # {tong_tien:,} VNĐ
-            """
-        )
-
-        st.markdown(
-            """
-            ### 💗 Cảm ơn quý khách đã ủng hộ LYLY!
-            """
-        )
-
-        st.markdown(
-            "</div>",
-            unsafe_allow_html=True
-        )
+            worksheet.column_dimensions[
+                column_letter
+            ].width = max_length + 3
 
 
-        # =============================================
-        # TẠO FILE EXCEL
-        # =============================================
-
-        df_excel = pd.DataFrame(don_hang)
-
-        df_excel.insert(
-            0,
-            "Mã hóa đơn",
-            ma_bill
-        )
-
-        df_excel.insert(
-            1,
-            "Thời gian",
-            thoi_gian
-        )
-
-        df_excel.insert(
-            2,
-            "Khách hàng",
-            ten_khach
-        )
+    excel_data = output.getvalue()
 
 
-        # =============================================
-        # NÚT TẢI EXCEL
-        # =============================================
+    # =====================================================
+    # NÚT DOWNLOAD
+    # =====================================================
 
-        st.subheader("📥 Xuất hóa đơn")
+    st.download_button(
 
-        st.download_button(
-            label="📥 TẢI BILL EXCEL",
-            data=df_excel.to_csv(
-                index=False
-            ).encode("utf-8-sig"),
-            file_name=f"Bill_Lyly_{ma_bill}.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
+        label="📥 TẢI BILL EXCEL",
+
+        data=excel_data,
+
+        file_name=f"Bill_Lyly_{ma_bill}.xlsx",
+
+        mime=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
+
+        use_container_width=True
+    )
