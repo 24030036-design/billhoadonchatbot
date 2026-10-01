@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from io import BytesIO
-
+st.image("hinhanhcuaquan.jpg")
 # =========================
 # CẤU HÌNH APP
 # =========================
