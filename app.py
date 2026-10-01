@@ -1,12 +1,13 @@
+```python
 import streamlit as st
 import pandas as pd
 from datetime import datetime
 from io import BytesIO
-st.image("hinhanhcuaquan.png")
-# =========================
-# CẤU HÌNH APP
-# =========================
 
+# =====================================================
+# CẤU HÌNH TRANG
+# =====================================================
+st.image("hinhanhcuaquan.png")
 st.set_page_config(
     page_title="Lyly Milk Tea",
     page_icon="🧋",
